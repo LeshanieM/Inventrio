@@ -5,8 +5,8 @@
   "description": "Backend for Asset Management System",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node api.js && node server.js",
+    "dev": "node api.js && nodemon server.js",
     "seed": "node seed-mongodb.js"
   },
   "dependencies": {

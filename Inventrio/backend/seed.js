@@ -2,8 +2,8 @@ import mongoose from 'mongoose';
 import Asset from './models/Asset.js';
 import Maintenance from './models/Maintenance.js';
 import SparePart from './models/SpareParts.js'; // New: Import SparePart model
+import PurchaseRequest from './models/PurchaseRequest.js'; // New: Import PurchaseRequest model
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const seedData = async () => {
@@ -14,13 +14,12 @@ const seedData = async () => {
       process.env.MONGODB_URI || 'mongodb://localhost:27017/asset-management'
     );
     console.log('Connected to MongoDB successfully!');
-
     // Clear existing data
     console.log('Clearing existing data...');
     await Asset.deleteMany({});
     await Maintenance.deleteMany({});
     await SparePart.deleteMany({}); // New: Clear spare parts
-
+    await PurchaseRequest.deleteMany({}); // New: Clear purchase requests
     // Insert sample assets
     console.log('Inserting sample assets...');
     const assets = [
@@ -133,7 +132,6 @@ const seedData = async () => {
     ];
     const insertedAssets = await Asset.insertMany(assets);
     console.log(`Inserted ${insertedAssets.length} assets`);
-
     // New: Insert sample spare parts
     console.log('Inserting sample spare parts...');
     const spareParts = [
@@ -205,7 +203,48 @@ const seedData = async () => {
     ];
     const insertedSpareParts = await SparePart.insertMany(spareParts);
     console.log(`Inserted ${insertedSpareParts.length} spare parts`);
-
+    // New: Insert sample purchase requests
+    console.log('Inserting sample purchase requests...');
+    const purchaseRequests = [
+      {
+        id: 'PR-001',
+        partNameOrId: 'SP001',
+        requiredQuantity: 10,
+        reason: 'Low stock for upcoming maintenance on forklifts',
+        preferredVendor: 'HeavyEquip Supplies',
+        status: 'pending',
+        createdAt: new Date(),
+      },
+      {
+        id: 'PR-002',
+        partNameOrId: 'SP003',
+        requiredQuantity: 5,
+        reason: 'Emergency replacement for conveyor motor bearings',
+        preferredVendor: 'FlowSystems',
+        status: 'approved',
+        createdAt: new Date(Date.now() - 86400000 * 3), // 3 days ago
+      },
+      {
+        id: 'PR-003',
+        partNameOrId: 'SP004',
+        requiredQuantity: 2,
+        reason: 'Replacement tires worn out from heavy use',
+        preferredVendor: 'MoveMaster',
+        status: 'rejected',
+        createdAt: new Date(Date.now() - 86400000 * 7), // 7 days ago
+      },
+      {
+        id: 'PR-004',
+        partNameOrId: 'SP005',
+        requiredQuantity: 8,
+        reason: 'Stock replenishment for battery maintenance',
+        preferredVendor: 'PowerCell Inc.',
+        status: 'completed',
+        createdAt: new Date(Date.now() - 86400000 * 14), // 14 days ago
+      },
+    ];
+    const insertedPurchaseRequests = await PurchaseRequest.insertMany(purchaseRequests);
+    console.log(`Inserted ${insertedPurchaseRequests.length} purchase requests`);
     // Insert sample maintenance records
     console.log('Inserting maintenance records...');
     const maintenance = [
@@ -260,10 +299,9 @@ const seedData = async () => {
     ];
     const insertedMaintenance = await Maintenance.insertMany(maintenance);
     console.log(`Inserted ${insertedMaintenance.length} maintenance records`);
-
     console.log('Database seeded successfully!');
     console.log(
-      'You can now access the data at: http://localhost:5000/api/assets, /api/spare-parts, /api/maintenance'
+      'You can now access the data at: http://localhost:5000/api/assets, /api/spare-parts, /api/maintenance, /api/purchase-requests'
     );
     process.exit(0);
   } catch (error) {

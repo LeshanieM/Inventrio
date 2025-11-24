@@ -38,3 +38,13 @@ export const sparePartsAPI = {
   delete: (partNumber) => api.delete(`/spare-parts/${partNumber}`),
   getUsage: () => api.get('/spare-parts/usage'), // Optional: For usage history
 };
+
+// Purchase Requests API
+export const purchaseRequestsAPI = {
+  getAll: (filters = {}) => api.get('/purchase-requests', { params: filters }),
+  getById: (id) => api.get(`/purchase-requests/${id}`),
+  create: (requestData) => api.post('/purchase-requests', requestData),
+  update: (id, requestData) => api.put(`/purchase-requests/${id}`, requestData),
+  delete: (id) => api.delete(`/purchase-requests/${id}`),
+  getStats: () => api.get('/purchase-requests/stats/summary'), // Optional: For pending counts, etc.
+};

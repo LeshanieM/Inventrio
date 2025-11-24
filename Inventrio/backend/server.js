@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 import assetRoutes from './routes/assets.js';
 import maintenanceRoutes from './routes/maintenance.js';
 import sparePartsRoutes from './routes/spareParts.js'; // New: Import spare parts routes
-
+import purchaseRequestRoutes from './routes/purchaseRequests.js'; // New: Import purchase requests routes
 dotenv.config();
 
 const app = express();
@@ -18,6 +18,7 @@ app.use(express.json());
 app.use('/api/assets', assetRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
 app.use('/api/spare-parts', sparePartsRoutes); // New: Add spare parts routes
+app.use('/api/purchase-requests', purchaseRequestRoutes); // New: Add purchase requests routes
 
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI;

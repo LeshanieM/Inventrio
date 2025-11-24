@@ -99,7 +99,7 @@ router.delete('/:partNumber', async (req, res) => {
 // Get usage history (simple endpoint - can be expanded with a Usage model)
 router.get('/usage', async (req, res) => {
   try {
-    // For now, return mock usage data filtered by partNumber if provided
+    // Initially, return mock usage data filtered by partNumber if provided
     // In production, query a Usage collection
     const { partNumber } = req.query;
     let mockUsage = [

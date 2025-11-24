@@ -38,13 +38,21 @@ import AddPurchaseRequest from './components/AddPurchaseRequest';
 import PurchaseRequestList from './components/PurchaseRequestList';
 import PurchaseRequestDetail from './components/PurchaseRequestDetail';
 import { maintenanceAPI, purchaseRequestsAPI } from './services/api';
+
+/**
+ * Main App Component
+ * Manages the overall state and routing between different views in the asset management system.
+ * Handles data loading, navigation, and persistence for maintenance records.
+ */
 function App() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // State for current view and data
   const [currentView, setCurrentView] = useState('dashboard');
   const [assets, setAssets] = useState([]);
-  const [spareParts, setSpareParts] = useState([]); // New: Spare parts state
-  const [purchaseRequests, setPurchaseRequests] = useState([]); // New: Purchase requests state
+  const [spareParts, setSpareParts] = useState([]); 
+  const [purchaseRequests, setPurchaseRequests] = useState([]); 
   const [maintenance, setMaintenance] = useState([]);
   const [stats, setStats] = useState({
     total: 0,
@@ -53,11 +61,17 @@ function App() {
     lowStock: 0,
   });
   const [selectedAsset, setSelectedAsset] = useState(null);
-  const [selectedSparePart, setSelectedSparePart] = useState(null); // New: Selected spare part
+  const [selectedSparePart, setSelectedSparePart] = useState(null); 
   const [selectedMaintenance, setSelectedMaintenance] = useState(null);
-  const [selectedPurchaseRequest, setSelectedPurchaseRequest] = useState(null); // New: Selected purchase request
+  const [selectedPurchaseRequest, setSelectedPurchaseRequest] = useState(null); 
+
   // Helper to save/load from localStorage (for maintenance persistence)
   const STORAGE_KEY = 'assetManagement_maintenance';
+
+  /**
+   * Saves maintenance data to localStorage
+   * @param {Array} data - Array of maintenance records
+   */
   const saveMaintenanceToStorage = (data) => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -66,6 +80,11 @@ function App() {
       console.error('Error saving to localStorage:', error);
     }
   };
+
+  /**
+   * Loads maintenance data from localStorage
+   * @returns {Array|null} Array of maintenance records or null
+   */
   const loadMaintenanceFromStorage = () => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -75,13 +94,19 @@ function App() {
       return null;
     }
   };
+
+  // Initial data load on mount
   useEffect(() => {
     loadAssets();
-    loadSpareParts(); // New: Load spare parts
-    loadPurchaseRequests(); // New: Load purchase requests
+    loadSpareParts(); 
+    loadPurchaseRequests(); 
     loadStats();
     loadMaintenance();
   }, []);
+
+  /**
+   * Loads assets from API or uses mock data on error
+   */
   const loadAssets = async () => {
     try {
       const response = await fetch('/api/assets');
@@ -109,7 +134,8 @@ function App() {
       setAssets(mockAssets);
     }
   };
-  // New: Load spare parts
+
+  //Load spare parts from API or uses mock data on error
   const loadSpareParts = async () => {
     try {
       const response = await fetch('/api/spare-parts');
@@ -143,7 +169,8 @@ function App() {
       setSpareParts(mockSpareParts);
     }
   };
-  // New: Load purchase requests
+
+  //  Load purchase requests from API or uses mock data on error
   const loadPurchaseRequests = async () => {
     try {
       const response = await fetch('/api/purchase-requests');
@@ -175,6 +202,10 @@ function App() {
       setPurchaseRequests(mockPRs);
     }
   };
+
+  /**
+   * Loads maintenance from API, with fallback to localStorage or mock data
+   */
   const loadMaintenance = async () => {
     try {
       const response = await fetch('/api/maintenance');
@@ -186,7 +217,7 @@ function App() {
       setMaintenance(data);
       // Sync to localStorage for offline resilience
       saveMaintenanceToStorage(data);
-      // NEW: If API returned empty but storage has data, prefer storage (demo-friendly)
+      //  If API returned empty but storage has data, prefer storage (demo-friendly)
       const stored = loadMaintenanceFromStorage();
       if (data.length === 0 && stored && stored.length > 0) {
         console.log(
@@ -241,6 +272,10 @@ function App() {
       saveMaintenanceToStorage(fallbackData);
     }
   };
+
+  /**
+   * Loads asset statistics from API or uses mock data on error
+   */
   const loadStats = async () => {
     try {
       const response = await fetch('/api/assets/stats/summary');
@@ -256,79 +291,130 @@ function App() {
       });
     }
   };
+
+  /**
+   * Handles navigation between views and reloads relevant data
+   * @param {string} view - The view to switch to (e.g., 'dashboard', 'asset-list')
+   */
   const handleViewChange = (view) => {
     setCurrentView(view);
     if (view === 'dashboard') {
       loadStats();
       loadMaintenance();
-      loadSpareParts(); // New: Reload spares on dashboard
-      loadPurchaseRequests(); // New: Reload purchase requests on dashboard
+      loadSpareParts(); //  Reload spares on dashboard
+      loadPurchaseRequests(); // Reload purchase requests on dashboard
     } else if (view === 'asset-list') {
       loadAssets();
-    } else if (view === 'spare-parts-list') { // New: Load spares
+    } else if (view === 'spare-parts-list') { //  Load spares
       loadSpareParts();
-    } else if (view === 'purchase-requests-list') { // New: Load purchase requests
+    } else if (view === 'purchase-requests-list') { //  Load purchase requests
       loadPurchaseRequests();
     } else if (view === 'maintenance-list') {
       loadMaintenance();
     }
   };
+
+  /**
+   * Handles selection of an asset for detail view
+   * @param {object} asset - Selected asset object
+   */
   const handleAssetSelect = (asset) => {
     setSelectedAsset(asset);
     setCurrentView('asset-detail');
   };
-  // New: Handle spare part select
+
+  //  Handle spare part select for detail view
   const handleSparePartSelect = (sparePart) => {
     setSelectedSparePart(sparePart);
     setCurrentView('spare-part-detail');
   };
-  // New: Handle purchase request select
+
+  //  Handle purchase request select for detail view
   const handlePurchaseRequestSelect = (purchaseRequest) => {
     setSelectedPurchaseRequest(purchaseRequest);
     setCurrentView('purchase-request-detail');
   };
+
+  /**
+   * Handles selection of a maintenance record for detail view
+   * @param {object} maintenanceRecord - Selected maintenance record
+   */
   const handleMaintenanceSelect = (maintenanceRecord) => {
     setSelectedMaintenance(maintenanceRecord);
     setCurrentView('maintenance-detail');
   };
+
+  /**
+   * Handles asset addition and refreshes list
+   */
   const handleAssetAdded = () => {
     loadAssets();
     loadStats();
     setCurrentView('asset-list');
   };
-  // New: Handle spare part added
+
+  // Handle spare part addition and refreshes list
   const handleSparePartAdded = () => {
     loadSpareParts();
     setCurrentView('spare-parts-list');
   };
-  // New: Handle purchase request added
+
+  // Handle purchase request addition and refreshes list
   const handlePurchaseRequestAdded = () => {
     loadPurchaseRequests();
     setCurrentView('purchase-requests-list');
   };
+
+  /**
+   * Handles maintenance addition and refreshes list
+   */
   const handleMaintenanceAdded = () => {
     loadMaintenance();
     setCurrentView('maintenance-list');
   };
+
+  /**
+   * Handles asset edit navigation
+   * @param {object} asset - Asset to edit
+   */
   const handleAssetEdit = (asset) => {
     setSelectedAsset(asset);
     setCurrentView('asset-detail');
   };
-  // New: Handle spare part edit (navigate to detail for now; can add inline later)
+
+  // Handle spare part edit navigation
   const handleSparePartEdit = (sparePart) => {
     setSelectedSparePart(sparePart);
     setCurrentView('spare-part-detail');
   };
-  // New: Handle purchase request edit
+
+/*************  ✨ Windsurf Command 🌟  *************/
+  /**
+   * Handles purchase request edit navigation
+   * @param {object} purchaseRequest - Purchase request to edit
+   * @description Sets the selected purchase request and navigates to the detail view
+   */
+  //  Handle purchase request edit navigation
   const handlePurchaseRequestEdit = (purchaseRequest) => {
     setSelectedPurchaseRequest(purchaseRequest);
     setCurrentView('purchase-request-detail');
   };
+/*******  c308c0a8-5163-4d37-a595-c114d0852e90  *******/
+
+  /**
+   * Handles maintenance edit navigation
+   * @param {object} maintenanceRecord - Maintenance record to edit
+   */
   const handleMaintenanceEdit = (maintenanceRecord) => {
     setSelectedMaintenance(maintenanceRecord);
     setCurrentView('maintenance-detail');
   };
-  // FIXED handleMaintenanceUpdate: Compute updated list FIRST, then set & save (avoids async stale state)
+
+  // Compute updated list FIRST, then set & save (avoids async stale state)
+  /**
+   * Updates a maintenance record locally and attempts backend sync
+   * @param {object} updatedRecord - Updated maintenance record
+   */
   const handleMaintenanceUpdate = async (updatedRecord) => {
     try {
       // Try backend update
@@ -358,7 +444,12 @@ function App() {
     saveMaintenanceToStorage(updatedList);
     console.log('Local update completed for:', updatedRecord.id);
   };
+
   // handleMaintenanceDelete (already good, but added response check)
+  /**
+   * Deletes a maintenance record locally and attempts backend sync
+   * @param {string} recordId - ID of maintenance record to delete
+   */
   const handleMaintenanceDelete = async (recordId) => {
     try {
       const response = await fetch(`/api/maintenance/${recordId}`, {
@@ -390,6 +481,11 @@ function App() {
       'records'
     );
   };
+
+  /**
+   * Selects an asset from maintenance context
+   * @param {string} assetId - ID of asset to select
+   */
   const handleAssetSelectFromMaintenance = async (assetId) => {
     try {
       // Find asset in local state first
@@ -410,6 +506,11 @@ function App() {
       console.error('Error loading asset:', error);
     }
   };
+
+  /**
+   * Returns the title for the current view
+   * @returns {string} View title
+   */
   const getViewTitle = () => {
     const titles = {
       dashboard: 'Dashboard',
@@ -417,17 +518,22 @@ function App() {
       'asset-detail': 'Asset Details',
       'maintenance-list': 'Maintenance Records',
       'maintenance-detail': 'Maintenance Details',
-      'spare-parts-list': 'Spare Parts Inventory', // New
-      'spare-part-detail': 'Spare Part Details', // New
-      'purchase-requests-list': 'Purchase Requests', // New
-      'purchase-request-detail': 'Purchase Request Details', // New
+      'spare-parts-list': 'Spare Parts Inventory', 
+      'spare-part-detail': 'Spare Part Details', 
+      'purchase-requests-list': 'Purchase Requests', 
+      'purchase-request-detail': 'Purchase Request Details', 
       'add-asset': 'Add New Asset',
       'add-maintenance': 'Add Maintenance Record',
-      'add-spare-part': 'Add New Spare Part', // New
-      'add-purchase-request': 'Add Purchase Request', // New
+      'add-spare-part': 'Add New Spare Part', 
+      'add-purchase-request': 'Add Purchase Request', 
     };
     return titles[currentView] || 'Asset Management';
   };
+
+  /**
+   * Returns the icon for the current view
+   * @returns {JSX.Element} View icon
+   */
   const getViewIcon = () => {
     const icons = {
       dashboard: <DashboardIcon />,
@@ -435,17 +541,22 @@ function App() {
       'asset-detail': <Inventory />,
       'maintenance-list': <Build />,
       'maintenance-detail': <Build />,
-      'spare-parts-list': <StoreIcon />, // New
-      'spare-part-detail': <StoreIcon />, // New
-      'purchase-requests-list': <Pending />, // New
-      'purchase-request-detail': <Pending />, // New
+      'spare-parts-list': <StoreIcon />, 
+      'spare-part-detail': <StoreIcon />, 
+      'purchase-requests-list': <Pending />, 
+      'purchase-request-detail': <Pending />, 
       'add-asset': <Add />,
       'add-maintenance': <Add />,
-      'add-spare-part': <Add />, // New
-      'add-purchase-request': <Add />, // New
+      'add-spare-part': <Add />, 
+      'add-purchase-request': <Add />, 
     };
     return icons[currentView] || <DashboardIcon />;
   };
+
+  /**
+   * Renders the appropriate component based on current view
+   * @returns {JSX.Element} Rendered view component
+   */
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
@@ -489,7 +600,7 @@ function App() {
             onEdit={handleMaintenanceEdit}
           />
         );
-      case 'spare-parts-list': // New
+      case 'spare-parts-list': 
         return (
           <SparePartList
             spareParts={spareParts}
@@ -499,7 +610,7 @@ function App() {
             onAddSparePart={() => handleViewChange('add-spare-part')}
           />
         );
-      case 'spare-part-detail': // New
+      case 'spare-part-detail': 
         return (
           <SparePartDetail
             sparePart={selectedSparePart}
@@ -507,7 +618,7 @@ function App() {
             onEdit={handleSparePartEdit}
           />
         );
-      case 'purchase-requests-list': // New
+      case 'purchase-requests-list': 
         return (
           <PurchaseRequestList
             purchaseRequests={purchaseRequests}
@@ -517,7 +628,7 @@ function App() {
             onAddPurchaseRequest={() => handleViewChange('add-purchase-request')}
           />
         );
-      case 'purchase-request-detail': // New
+      case 'purchase-request-detail': 
         return (
           <PurchaseRequestDetail
             purchaseRequest={selectedPurchaseRequest}
@@ -528,14 +639,16 @@ function App() {
         return <AddAsset onAssetAdded={handleAssetAdded} />;
       case 'add-maintenance':
         return <AddMaintenance onMaintenanceAdded={handleMaintenanceAdded} />;
-      case 'add-spare-part': // New
+      case 'add-spare-part': 
         return <AddSparePart onSparePartAdded={handleSparePartAdded} />;
-      case 'add-purchase-request': // New
+      case 'add-purchase-request': 
         return <AddPurchaseRequest onPurchaseRequestAdded={handlePurchaseRequestAdded} />;
       default:
         return <Dashboard stats={stats} assets={assets} spareParts={spareParts} purchaseRequests={purchaseRequests} />;
     }
   };
+
+  // Local component for navigation tabs
   const NavigationTabs = () => (
     <Tabs
       value={currentView}
@@ -563,7 +676,7 @@ function App() {
       <Tab
         icon={<StoreIcon />}
         iconPosition="start"
-        label={isMobile ? '' : 'Spare Parts'} // New tab
+        label={isMobile ? '' : 'Spare Parts'} 
         value="spare-parts-list"
       />
       <Tab
@@ -580,6 +693,8 @@ function App() {
       />
     </Tabs>
   );
+
+  // Local component for action buttons
   const ActionButtons = () => (
     <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
       <Tooltip title="Add New Asset">
@@ -624,6 +739,7 @@ function App() {
       </Tooltip>
     </Box>
   );
+
   return (
     <Box
       sx={{
@@ -679,4 +795,5 @@ function App() {
     </Box>
   );
 }
+
 export default App;

@@ -25,8 +25,7 @@ import {
   Store,
   AttachMoney,
 } from '@mui/icons-material';
-// Assuming you have or will add sparePartsAPI in services/api.js
-// e.g., export const sparePartsAPI = { create: (data) => api.post('/spare-parts', data), ... };
+
 import { sparePartsAPI } from '../services/api';
 
 const AddSparePart = ({ onSparePartAdded }) => {

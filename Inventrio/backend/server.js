@@ -4,8 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import assetRoutes from './routes/assets.js';
 import maintenanceRoutes from './routes/maintenance.js';
-import sparePartsRoutes from './routes/spareParts.js'; // New: Import spare parts routes
-import purchaseRequestRoutes from './routes/purchaseRequests.js'; // New: Import purchase requests routes
+import sparePartsRoutes from './routes/spareParts.js'; 
+import purchaseRequestRoutes from './routes/purchaseRequests.js'; 
 dotenv.config();
 
 const app = express();
@@ -17,9 +17,8 @@ app.use(express.json());
 // Routes
 app.use('/api/assets', assetRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/spare-parts', sparePartsRoutes); // New: Add spare parts routes
-app.use('/api/purchase-requests', purchaseRequestRoutes); // New: Add purchase requests routes
-
+app.use('/api/spare-parts', sparePartsRoutes); 
+app.use('/api/purchase-requests', purchaseRequestRoutes); 
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.connect(MONGODB_URI, {

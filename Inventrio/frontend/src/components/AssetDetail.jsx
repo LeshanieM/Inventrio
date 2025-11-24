@@ -1,4 +1,3 @@
-//individual asset details page
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -40,17 +39,33 @@ import {
   MeetingRoom,
 } from '@mui/icons-material';
 
+/**
+ * This component displays detailed information about a specific asset in a tabbed interface.
+ 
+ * Props:
+ * - asset: Object containing asset data (e.g., name, status, quantity, etc.).
+ * - onBack: Callback function to navigate back to the asset list.
+ */
 const AssetDetail = ({ asset, onBack }) => {
   const theme = useTheme();
+
+  // State for active tab index
   const [activeTab, setActiveTab] = useState(0);
+
+  // State for maintenance history records
   const [maintenanceHistory, setMaintenanceHistory] = useState([]);
 
+  // Effect to load maintenance history when asset changes
   useEffect(() => {
     if (asset) {
       loadAssetMaintenance();
     }
   }, [asset]);
 
+  /**
+   * Fetches maintenance records for the current asset from the API
+   * Filters records by assetId and updates state
+   */
   const loadAssetMaintenance = async () => {
     try {
       const response = await fetch('/api/maintenance');
@@ -64,6 +79,11 @@ const AssetDetail = ({ asset, onBack }) => {
     }
   };
 
+  /**
+   * Calculates a condition score (1-5) based on asset status and stock levels
+   * Used for visual representation in the Condition tab
+   * @returns {number} Condition score between 1 and 5
+   */
   const calculateConditionScore = () => {
     let base = 4.5;
     if (asset.status === 'repair') base = 2.5;
@@ -74,6 +94,11 @@ const AssetDetail = ({ asset, onBack }) => {
 
   const conditionScore = calculateConditionScore();
 
+  /**
+   * Formats a date string to a readable locale format
+   * @param {string} dateString - ISO date string
+   * @returns {string} Formatted date or 'Not recorded' if invalid
+   */
   const formatDate = (dateString) => {
     if (!dateString) return 'Not recorded';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -83,6 +108,11 @@ const AssetDetail = ({ asset, onBack }) => {
     });
   };
 
+  /**
+   * Returns configuration for status display (label, color, icon)
+   * @param {string} status - Asset status (e.g., 'active', 'repair')
+   * @returns {object} Status config with label, color, and icon
+   */
   const getStatusConfig = (status) => {
     const config = {
       active: { label: 'Active', color: 'success', icon: <CheckCircle /> },
@@ -95,6 +125,11 @@ const AssetDetail = ({ asset, onBack }) => {
     );
   };
 
+  /**
+   * Renders a Chip component for asset status
+   * @param {string} status - Asset status
+   * @returns {JSX.Element} Status Chip
+   */
   const getStatusChip = (status) => {
     const config = getStatusConfig(status);
     return (
@@ -108,6 +143,11 @@ const AssetDetail = ({ asset, onBack }) => {
     );
   };
 
+  /**
+   * Returns configuration for maintenance status Chip (label, color)
+   * @param {string} status - Maintenance status (e.g., 'completed', 'in-progress')
+   * @returns {object} Maintenance status config
+   */
   const getMaintenanceStatusChip = (status) => {
     const statusConfig = {
       completed: { label: 'Completed', color: 'success' },
@@ -119,6 +159,10 @@ const AssetDetail = ({ asset, onBack }) => {
     return <Chip label={config.label} color={config.color} size="small" />;
   };
 
+  /**
+   * Determines stock status based on quantity vs. minThreshold
+   * @returns {object} Stock status with label, color, and adequacy flag
+   */
   const getStockStatus = () => {
     if (asset.quantity <= asset.minThreshold) {
       return { label: 'Low Stock', color: 'error', adequate: false };
@@ -128,6 +172,7 @@ const AssetDetail = ({ asset, onBack }) => {
 
   const stockStatus = getStockStatus();
 
+  // Render loading state if no asset is provided
   if (!asset) {
     return (
       <Box sx={{ p: 3 }}>
@@ -144,6 +189,7 @@ const AssetDetail = ({ asset, onBack }) => {
 
   const statusConfig = getStatusConfig(asset.status);
 
+  // Tab labels with dynamic maintenance count
   const tabLabels = [
     'General Info',
     `Maintenance (${maintenanceHistory.length})`,
@@ -151,6 +197,15 @@ const AssetDetail = ({ asset, onBack }) => {
     'Lifecycle',
   ];
 
+  /**
+   * Reusable DetailField component for displaying key-value pairs with icons
+   * @param {object} props - Component props
+   * @param {JSX.Element} props.icon - Icon to display
+   * @param {string} props.label - Field label
+   * @param {string} props.value - Field value
+   * @param {string} [props.color='text.primary'] - Text color
+   * @returns {JSX.Element} Detail field Grid item
+   */
   const DetailField = ({ icon, label, value, color = 'text.primary' }) => (
     <Grid item xs={12} sm={6} md={4}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
@@ -171,7 +226,7 @@ const AssetDetail = ({ asset, onBack }) => {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header */}
+      {/* Header Section with Back Button, Asset Title, and Status */}
       <Card sx={{ mb: 3, backgroundColor: 'background.paper' }}>
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -228,7 +283,7 @@ const AssetDetail = ({ asset, onBack }) => {
         </CardContent>
       </Card>
 
-      {/* Tabs */}
+      {/* Main Tabs Container */}
       <Card sx={{ backgroundColor: 'background.paper' }}>
         <Tabs
           value={activeTab}
@@ -243,9 +298,8 @@ const AssetDetail = ({ asset, onBack }) => {
             <Tab key={index} label={label} />
           ))}
         </Tabs>
-
         <CardContent>
-          {/* General Info Tab */}
+          {/* General Info Tab: Displays key asset details in a grid */}
           {activeTab === 0 && (
             <Grid container spacing={2}>
               <DetailField
@@ -302,7 +356,7 @@ const AssetDetail = ({ asset, onBack }) => {
             </Grid>
           )}
 
-          {/* Maintenance Tab */}
+          {/* Maintenance Tab: Lists maintenance history records */}
           {activeTab === 1 && (
             <Box>
               <Typography variant="h6" gutterBottom>
@@ -367,7 +421,7 @@ const AssetDetail = ({ asset, onBack }) => {
             </Box>
           )}
 
-          {/* Condition Tab */}
+          {/* Condition Tab: Shows condition score, progress bar, and health indicators */}
           {activeTab === 2 && (
             <Box>
               <Grid container spacing={3}>
@@ -449,7 +503,6 @@ const AssetDetail = ({ asset, onBack }) => {
                     </CardContent>
                   </Card>
                 </Grid>
-
                 <Grid item xs={12} md={6}>
                   <Card variant="outlined">
                     <CardContent>
@@ -527,7 +580,7 @@ const AssetDetail = ({ asset, onBack }) => {
             </Box>
           )}
 
-          {/* Lifecycle Tab */}
+          {/* Lifecycle Tab: Timeline of asset events */}
           {activeTab === 3 && (
             <Box>
               <Typography

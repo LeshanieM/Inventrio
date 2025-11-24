@@ -37,14 +37,13 @@ import {
   Link as LinkIcon,
   Warning,
 } from '@mui/icons-material';
-// Remove: import { maintenanceAPI } from '../services/api'; (no longer used here)
 
 const MaintenanceList = ({
   maintenance,
   onRefresh,
   onMaintenanceSelect,
-  onMaintenanceUpdate, // Add this
-  onMaintenanceDelete, // Add this
+  onMaintenanceUpdate, 
+  onMaintenanceDelete, 
   onAssetSelect,
 }) => {
   const [filters, setFilters] = useState({
@@ -192,7 +191,7 @@ const MaintenanceList = ({
         severity: 'success',
       });
 
-      // REMOVED: onRefresh(); // Avoid resetting local state with mock data
+      // onRefresh(); // Avoid resetting local state with mock data
     } catch (error) {
       console.error('Error deleting maintenance record:', error);
       // The prop handler already logs/updates local on error, but show snackbar here

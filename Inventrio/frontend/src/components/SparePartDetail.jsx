@@ -48,7 +48,7 @@ const SparePartDetail = ({ sparePart, onBack }) => {
 
   const loadSparePartUsage = async () => {
     try {
-      const response = await fetch('/api/spare-parts/usage'); // Adjust endpoint as needed
+      const response = await fetch('/api/spare-parts/usage');
       const data = await response.json();
       const partUsage = data.filter(
         (record) => record.partNumber === sparePart.partNumber

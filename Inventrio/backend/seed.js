@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import Asset from './models/Asset.js';
 import Maintenance from './models/Maintenance.js';
-import SparePart from './models/SpareParts.js'; // New: Import SparePart model
-import PurchaseRequest from './models/PurchaseRequest.js'; // New: Import PurchaseRequest model
+import SparePart from './models/SpareParts.js'; 
+import PurchaseRequest from './models/PurchaseRequest.js'; 
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -18,8 +18,8 @@ const seedData = async () => {
     console.log('Clearing existing data...');
     await Asset.deleteMany({});
     await Maintenance.deleteMany({});
-    await SparePart.deleteMany({}); // New: Clear spare parts
-    await PurchaseRequest.deleteMany({}); // New: Clear purchase requests
+    await SparePart.deleteMany({}); 
+    await PurchaseRequest.deleteMany({}); 
     // Insert sample assets
     console.log('Inserting sample assets...');
     const assets = [
@@ -132,7 +132,7 @@ const seedData = async () => {
     ];
     const insertedAssets = await Asset.insertMany(assets);
     console.log(`Inserted ${insertedAssets.length} assets`);
-    // New: Insert sample spare parts
+    // Insert sample spare parts
     console.log('Inserting sample spare parts...');
     const spareParts = [
       {
@@ -203,7 +203,7 @@ const seedData = async () => {
     ];
     const insertedSpareParts = await SparePart.insertMany(spareParts);
     console.log(`Inserted ${insertedSpareParts.length} spare parts`);
-    // New: Insert sample purchase requests
+    //  Insert sample purchase requests
     console.log('Inserting sample purchase requests...');
     const purchaseRequests = [
       {

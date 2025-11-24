@@ -25,7 +25,22 @@ import {
   Store as StoreIcon, // For spare parts
   Pending as PendingIcon, // For purchase requests
 } from '@mui/icons-material';
+
+// Register Chart.js components for doughnut charts
 ChartJS.register(ArcElement, Tooltip, Legend);
+
+/**
+ * This component provides an overview of the asset management system,
+ * displaying key statistics, charts for asset status, spare parts stock,
+ * and purchase requests, along with lists for low stock items and recent maintenance.
+ * 
+ * Props:
+ * - stats: Object with asset statistics (e.g., { total: number, active: number, repair: number }).
+ * - assets: Array of asset objects (e.g., [{ id, name, quantity, minThreshold, status, ... }]).
+ * - maintenance: Array of maintenance records (e.g., [{ id, asset, date, status, action, ... }]).
+ * - spareParts: Array of spare part objects (e.g., [{ partNumber, partName, stock, minimumStock, unit, ... }]).
+ * - purchaseRequests: Array of purchase request objects (e.g., [{ id, partNameOrId, status, requiredQuantity, preferredVendor, createdAt, ... }]).
+ */
 const Dashboard = ({
   stats,
   assets,
@@ -33,37 +48,66 @@ const Dashboard = ({
   spareParts = [],
   purchaseRequests = [],
 }) => {
-  // Add purchaseRequests prop
+  // Access Material-UI theme for consistent styling
   const theme = useTheme();
+
+  // State for low stock assets (filtered from props)
   const [lowStockAssets, setLowStockAssets] = useState([]);
+
+  // State for low stock spare parts (filtered from props)
   const [lowStockSpareParts, setLowStockSpareParts] = useState([]);
+
+  // State for recent maintenance history (sorted and sliced)
   const [maintenanceHistory, setMaintenanceHistory] = useState([]);
-  const [pendingRequests, setPendingRequests] = useState([]); // New: Pending purchase requests
+
+  // State for pending purchase requests (filtered, sorted, and sliced)
+  const [pendingRequests, setPendingRequests] = useState([]);
+
+  // Effect to load derived data when props change
   useEffect(() => {
     loadLowStockAssets();
     loadLowStockSpareParts();
     loadMaintenanceHistory();
-    loadPendingRequests(); // New
-  }, [assets, spareParts, maintenance, purchaseRequests]); // Include purchaseRequests
+    loadPendingRequests();
+  }, [assets, spareParts, maintenance, purchaseRequests]);
+
+  /**
+   * Filters assets where quantity <= minThreshold
+   * Updates lowStockAssets state
+   */
   const loadLowStockAssets = () => {
     const lowStock = assets.filter(
       (asset) => asset.quantity <= asset.minThreshold
     );
     setLowStockAssets(lowStock);
   };
+
+  /**
+   * Filters spare parts where stock <= minimumStock
+   * Updates lowStockSpareParts state
+   */
   const loadLowStockSpareParts = () => {
     const lowStock = spareParts.filter(
       (part) => part.stock <= part.minimumStock
     );
     setLowStockSpareParts(lowStock);
   };
+
+  /**
+   * Sorts maintenance records by date (descending) and takes top 5
+   * Updates maintenanceHistory state
+   */
   const loadMaintenanceHistory = () => {
     const recentMaintenance = maintenance
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 5);
     setMaintenanceHistory(recentMaintenance);
   };
-  // New: Load pending purchase requests
+
+  /**
+   * Filters pending purchase requests, sorts by createdAt (descending), and takes top 5
+   * Updates pendingRequests state
+   */
   const loadPendingRequests = () => {
     const pending = purchaseRequests
       .filter((req) => req.status === 'pending')
@@ -71,7 +115,8 @@ const Dashboard = ({
       .slice(0, 5);
     setPendingRequests(pending);
   };
-  // Existing asset chart
+
+  // Chart data for asset status (Active vs Under Repair)
   const assetChartData = {
     labels: ['Active', 'Under Repair'],
     datasets: [
@@ -90,11 +135,14 @@ const Dashboard = ({
       },
     ],
   };
-  // Existing spare parts chart
+
+  // Calculate counts for spare parts chart (Adequate vs Low/Out of Stock)
   const adequateSpareParts = spareParts.filter(
     (part) => part.stock > part.minimumStock
   ).length;
   const lowSpareParts = spareParts.length - adequateSpareParts;
+
+  // Chart data for spare parts stock levels
   const spareChartData = {
     labels: ['Adequate Stock', 'Low/Out of Stock'],
     datasets: [
@@ -110,11 +158,14 @@ const Dashboard = ({
       },
     ],
   };
-  // New: Purchase requests status chart (Pending vs Others)
+
+  // Calculate counts for purchase requests chart (Pending vs Others)
   const pendingRequestsCount = purchaseRequests.filter(
     (req) => req.status === 'pending'
   ).length;
   const otherRequestsCount = purchaseRequests.length - pendingRequestsCount;
+
+  // Chart data for purchase requests status
   const requestsChartData = {
     labels: ['Pending', 'Approved/Rejected/Completed'],
     datasets: [
@@ -130,6 +181,8 @@ const Dashboard = ({
       },
     ],
   };
+
+  // Common options for all doughnut charts
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -160,12 +213,20 @@ const Dashboard = ({
     },
     cutout: '68%',
   };
+
+  // Calculate maintenance counts for stats display
   const completedMaintenance = maintenance.filter(
     (m) => m.status === 'completed'
   ).length;
   const pendingMaintenance = maintenance.filter(
     (m) => m.status === 'pending' || m.status === 'in-progress'
   ).length;
+
+  /**
+   * Renders a Chip for maintenance status with appropriate color and label
+   * @param {string} status - Maintenance status (e.g., 'completed', 'in-progress')
+   * @returns {JSX.Element} Status Chip
+   */
   const getStatusChip = (status) => {
     const statusConfig = {
       completed: { label: 'Completed', color: 'success' },
@@ -175,6 +236,12 @@ const Dashboard = ({
     const config = statusConfig[status] || { label: status, color: 'default' };
     return <Chip label={config.label} color={config.color} size="small" />;
   };
+
+  /**
+   * Formats a date string to a short locale format (e.g., 'Nov 24, 2025')
+   * @param {string} dateString - ISO date string
+   * @returns {string} Formatted date
+   */
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -182,6 +249,17 @@ const Dashboard = ({
       day: 'numeric',
     });
   };
+
+  /**
+   * Reusable StatCard component for displaying key metrics with icons
+   * @param {object} props - Component props
+   * @param {JSX.Element} props.icon - Icon to display
+   * @param {string} props.title - Card title
+   * @param {number|string} props.value - Main metric value
+   * @param {string} [props.subtitle] - Optional subtitle
+   * @param {string} [props.color='primary'] - Icon and text color
+   * @returns {JSX.Element} Stat card
+   */
   const StatCard = ({ icon, title, value, subtitle, color = 'primary' }) => (
     <Card sx={{ height: '100%', backgroundColor: 'background.paper' }}>
       <CardContent sx={{ textAlign: 'center', p: 3 }}>
@@ -211,9 +289,10 @@ const Dashboard = ({
       </CardContent>
     </Card>
   );
+
   return (
     <Box sx={{ p: 3 }}>
-      {/* Header with Logo */}
+      {/* Header with Logo and Title */}
       <Box
         sx={{
           mb: 4,
@@ -238,8 +317,10 @@ const Dashboard = ({
           </Typography>
         </Box>
       </Box>
-      {/* Summary Stats Row - Updated with Purchase Requests */}
+
+      {/* Summary Stats Row - Key Metrics Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
+        {/* Total Assets Card */}
         <Grid item xs={12} sm={6} md={2}>
           <StatCard
             icon={<Inventory />}
@@ -248,6 +329,7 @@ const Dashboard = ({
             color="primary"
           />
         </Grid>
+        {/* Active Assets Card */}
         <Grid item xs={12} sm={6} md={2}>
           <StatCard
             icon={<CheckCircle />}
@@ -256,6 +338,7 @@ const Dashboard = ({
             color="success"
           />
         </Grid>
+        {/* Under Repair Assets Card */}
         <Grid item xs={12} sm={6} md={2}>
           <StatCard
             icon={<Build />}
@@ -264,6 +347,7 @@ const Dashboard = ({
             color="warning"
           />
         </Grid>
+        {/* Maintenance Records Card */}
         <Grid item xs={12} sm={6} md={2}>
           <StatCard
             icon={<History />}
@@ -273,7 +357,7 @@ const Dashboard = ({
             color="info"
           />
         </Grid>
-        {/* Spare Parts Stats */}
+        {/* Total Spare Parts Card */}
         <Grid item xs={12} sm={6} md={2}>
           <StatCard
             icon={<StoreIcon />}
@@ -282,6 +366,7 @@ const Dashboard = ({
             color="secondary"
           />
         </Grid>
+        {/* Low Stock Spare Parts Card */}
         <Grid item xs={12} sm={6} md={2}>
           <StatCard
             icon={<Warning />}
@@ -293,7 +378,7 @@ const Dashboard = ({
             color="error"
           />
         </Grid>
-        {/* New: Purchase Requests Stats */}
+        {/* Purchase Requests Card */}
         <Grid item xs={12} sm={6} md={2}>
           <StatCard
             icon={<PendingIcon />}
@@ -304,9 +389,10 @@ const Dashboard = ({
           />
         </Grid>
       </Grid>
-      {/* Middle Row - Charts (Assets + Spare Parts + Requests) */}
+
+      {/* Middle Row - Doughnut Charts */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        {/* Asset Status Chart */}
+        {/* Asset Status Doughnut Chart */}
         <Grid item xs={12} md={4}>
           <Card sx={{ backgroundColor: 'background.paper', height: '100%' }}>
             <CardContent>
@@ -324,7 +410,7 @@ const Dashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        {/* Spare Parts Stock Chart */}
+        {/* Spare Parts Stock Doughnut Chart */}
         <Grid item xs={12} md={4}>
           <Card sx={{ backgroundColor: 'background.paper', height: '100%' }}>
             <CardContent>
@@ -342,7 +428,7 @@ const Dashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        {/* New: Purchase Requests Status Chart */}
+        {/* Purchase Requests Status Doughnut Chart */}
         <Grid item xs={12} md={4}>
           <Card sx={{ backgroundColor: 'background.paper', height: '100%' }}>
             <CardContent>
@@ -361,9 +447,10 @@ const Dashboard = ({
           </Card>
         </Grid>
       </Grid>
-      {/* Low Stock & Pending Sections Row */}
+
+      {/* Low Stock & Pending Sections Row - Lists */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
-        {/* Low Stock Assets */}
+        {/* Low Stock Assets List */}
         <Grid item xs={12} md={3}>
           <Card sx={{ backgroundColor: 'background.paper', height: '100%' }}>
             <CardContent
@@ -446,7 +533,7 @@ const Dashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        {/* Low Stock Spare Parts */}
+        {/* Low Stock Spare Parts List */}
         <Grid item xs={12} md={3}>
           <Card sx={{ backgroundColor: 'background.paper', height: '100%' }}>
             <CardContent
@@ -530,7 +617,7 @@ const Dashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        {/* New: Pending Purchase Requests */}
+        {/* Pending Purchase Requests List */}
         <Grid item xs={12} md={3}>
           <Card sx={{ backgroundColor: 'background.paper', height: '100%' }}>
             <CardContent
@@ -613,7 +700,7 @@ const Dashboard = ({
             </CardContent>
           </Card>
         </Grid>
-        {/* Recent Maintenance */}
+        {/* Recent Maintenance List */}
         <Grid item xs={12} md={3}>
           <Card sx={{ backgroundColor: 'background.paper', height: '100%' }}>
             <CardContent
@@ -693,4 +780,5 @@ const Dashboard = ({
     </Box>
   );
 };
+
 export default Dashboard;

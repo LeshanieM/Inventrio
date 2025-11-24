@@ -1,4 +1,3 @@
-// services/api.js
 import axios from 'axios';
 
 const API_BASE_URL = '/api';
@@ -16,7 +15,7 @@ export const assetsAPI = {
   getStats: () => api.get('/assets/stats/summary'),
 };
 
-// Maintenance API - Make sure ALL endpoints are here
+// Maintenance API 
 export const maintenanceAPI = {
   getAll: () => api.get('/maintenance'),
   getById: (id) => api.get(`/maintenance/${id}`),
@@ -36,7 +35,7 @@ export const sparePartsAPI = {
   update: (partNumber, sparePartData) =>
     api.put(`/spare-parts/${partNumber}`, sparePartData),
   delete: (partNumber) => api.delete(`/spare-parts/${partNumber}`),
-  getUsage: () => api.get('/spare-parts/usage'), // Optional: For usage history
+  getUsage: () => api.get('/spare-parts/usage'), // For usage history
 };
 
 // Purchase Requests API
@@ -46,5 +45,5 @@ export const purchaseRequestsAPI = {
   create: (requestData) => api.post('/purchase-requests', requestData),
   update: (id, requestData) => api.put(`/purchase-requests/${id}`, requestData),
   delete: (id) => api.delete(`/purchase-requests/${id}`),
-  getStats: () => api.get('/purchase-requests/stats/summary'), // Optional: For pending counts, etc.
+  getStats: () => api.get('/purchase-requests/stats/summary'), //  For pending counts, etc.
 };

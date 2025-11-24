@@ -38,30 +38,62 @@ import {
 } from '@mui/icons-material';
 import { assetsAPI } from '../services/api';
 
+/**
+ 
+ * This component renders a searchable and filterable table of assets with CRUD actions.
+ * Supports viewing details, inline editing via dialog, deletion with confirmation,
+ * and notifications via snackbar. Integrates with API for updates and deletions.
+ * 
+ * Props:
+ * - assets: Array of asset objects to display (e.g., [{ id, name, status, ... }]).
+ * - onRefresh: Callback to refresh the asset list (e.g., refetch from API).
+ * - onAssetSelect: Callback when viewing asset details (passes selected asset).
+ * - onAssetEdit: Legacy prop (unused; edit handled inline via dialog).
+ * - onAddAsset: Callback to open add asset form.
+ */
 const AssetList = ({
   assets,
   onRefresh,
   onAssetSelect,
-  onAssetEdit,
+  onAssetEdit, 
   onAddAsset,
 }) => {
+  // Filter state for search, status, and location
   const [filters, setFilters] = useState({
     search: '',
     status: '',
     location: '',
   });
+
+  // Dialog state for delete confirmation
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false); // New: Edit state
+
+  // Dialog state for edit form
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Selected asset for deletion
   const [assetToDelete, setAssetToDelete] = useState(null);
-  const [assetToEdit, setAssetToEdit] = useState(null); // New: Track editing asset
-  const [editForm, setEditForm] = useState({}); // New: Edit form state
+
+  // Selected asset for editing
+  const [assetToEdit, setAssetToEdit] = useState(null);
+
+  // Form state for edit dialog fields
+  const [editForm, setEditForm] = useState({});
+
+  // Loading state for API operations
   const [loading, setLoading] = useState(false);
+
+  // Snackbar state for success/error notifications
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success',
   });
 
+  /**
+   * Filters assets based on search term, status, and location
+   * Uses case-insensitive partial matching for search on name/ID
+   */
   const filteredAssets = assets.filter((asset) => {
     const matchesSearch =
       asset.name.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -72,10 +104,20 @@ const AssetList = ({
     return matchesSearch && matchesStatus && matchesLocation;
   });
 
+  /**
+   * Updates filter state for a specific key (search, status, location)
+   * @param {string} key - Filter key to update
+   * @param {string} value - New filter value
+   */
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
+  /**
+   * Renders a Chip for asset status with appropriate color and label
+   * @param {string} status - Asset status (e.g., 'active', 'repair')
+   * @returns {JSX.Element} Status Chip
+   */
   const getStatusChip = (status) => {
     const statusConfig = {
       active: { label: 'Active', color: 'success' },
@@ -87,6 +129,12 @@ const AssetList = ({
     return <Chip label={config.label} color={config.color} size="small" />;
   };
 
+  /**
+   * Renders stock quantity display; shows warning Chip if below threshold
+   * @param {number} quantity - Current asset quantity
+   * @param {number} minThreshold - Minimum stock threshold
+   * @returns {JSX.Element} Quantity display or warning Chip
+   */
   const getStockChip = (quantity, minThreshold) => {
     if (quantity <= minThreshold) {
       return (
@@ -104,7 +152,11 @@ const AssetList = ({
     return <Typography variant="body2">{quantity}</Typography>;
   };
 
-  // New: Handle edit click - open dialog with pre-filled form
+  /**
+   * Opens edit dialog with pre-filled form data from selected asset
+   * Logs asset ID for debugging
+   * @param {object} asset - Asset to edit
+   */
   const handleEditClick = (asset) => {
     console.log('Opening edit for asset:', asset.id);
     setAssetToEdit(asset);
@@ -122,12 +174,19 @@ const AssetList = ({
     setEditDialogOpen(true);
   };
 
-  // New: Handle form changes
+  /**
+   * Handles changes to edit form fields
+   * @param {string} field - Form field name (e.g., 'name')
+   * @param {string} value - New field value
+   */
   const handleFormChange = (field, value) => {
     setEditForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  // New: Submit edit
+  /**
+   * Submits edit form to API, updates asset, shows notification, and refreshes list
+   * Handles errors and resets state on completion
+   */
   const handleEditSubmit = async () => {
     if (!assetToEdit) return;
     setLoading(true);
@@ -169,12 +228,19 @@ const AssetList = ({
     }
   };
 
-  // Existing delete handlers (unchanged)
+  /**
+   * Opens delete confirmation dialog for selected asset
+   * @param {object} asset - Asset to delete
+   */
   const handleDeleteClick = (asset) => {
     setAssetToDelete(asset);
     setDeleteDialogOpen(true);
   };
 
+  /**
+   * Confirms and executes asset deletion via API, shows notification, and refreshes list
+   * Handles errors and resets state
+   */
   const handleDeleteConfirm = async () => {
     if (!assetToDelete) return;
     setLoading(true);
@@ -200,30 +266,41 @@ const AssetList = ({
     }
   };
 
+  /**
+   * Closes delete confirmation dialog and resets state
+   */
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false);
     setAssetToDelete(null);
   };
 
-  // New: Cancel edit
+  /**
+   * Closes edit dialog and resets form state
+   */
   const handleEditCancel = () => {
     setEditDialogOpen(false);
     setAssetToEdit(null);
     setEditForm({});
   };
 
+  /**
+   * Closes snackbar notification
+   */
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  // Updated: Edit button calls handleEditClick (dialog), not onAssetEdit
+  /**
+   * Handles edit button click; delegates to dialog flow (ignores onAssetEdit prop)
+   * @param {object} asset - Asset to edit
+   */
   const handleEdit = (asset) => {
     handleEditClick(asset); // Use new dialog flow
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Filter Card - unchanged */}
+      {/* Filter and Action Card */}
       <Card sx={{ mb: 3, backgroundColor: 'background.paper' }}>
         <CardContent>
           <Box
@@ -234,6 +311,7 @@ const AssetList = ({
               alignItems: 'center',
             }}
           >
+            {/* Search Input */}
             <TextField
               placeholder="Search assets..."
               value={filters.search}
@@ -248,6 +326,7 @@ const AssetList = ({
               sx={{ minWidth: 200 }}
               size="small"
             />
+            {/* Status Filter Select */}
             <TextField
               select
               label="Status"
@@ -262,6 +341,7 @@ const AssetList = ({
               <MenuItem value="standby">Standby</MenuItem>
               <MenuItem value="retired">Retired</MenuItem>
             </TextField>
+            {/* Location Filter Select */}
             <TextField
               select
               label="Location"
@@ -275,6 +355,7 @@ const AssetList = ({
               <MenuItem value="South Dock">South Dock</MenuItem>
               <MenuItem value="Main Floor">Main Floor</MenuItem>
             </TextField>
+            {/* Refresh Button */}
             <Button
               variant="outlined"
               startIcon={<Refresh />}
@@ -283,6 +364,7 @@ const AssetList = ({
             >
               Refresh
             </Button>
+            {/* Add Asset Button */}
             <Button
               variant="contained"
               startIcon={<Add />}
@@ -294,7 +376,8 @@ const AssetList = ({
           </Box>
         </CardContent>
       </Card>
-      {/* Assets Table Card - updated edit button call */}
+
+      {/* Assets Table Card */}
       <Card sx={{ backgroundColor: 'background.paper' }}>
         <CardHeader
           title={
@@ -377,6 +460,7 @@ const AssetList = ({
                       '&:hover': { backgroundColor: 'action.hover' },
                     }}
                   >
+                    {/* ID Cell */}
                     <TableCell>
                       <Typography
                         variant="body2"
@@ -385,6 +469,7 @@ const AssetList = ({
                         {asset.id}
                       </Typography>
                     </TableCell>
+                    {/* Name and Category Cell */}
                     <TableCell>
                       <Typography variant="body2" fontWeight="medium">
                         {asset.name}
@@ -399,6 +484,7 @@ const AssetList = ({
                         </Typography>
                       )}
                     </TableCell>
+                    {/* Location Details Cell */}
                     <TableCell>
                       <Typography variant="body2" color="text.secondary">
                         {asset.location}
@@ -415,17 +501,22 @@ const AssetList = ({
                         </Typography>
                       )}
                     </TableCell>
+                    {/* Status Chip Cell */}
                     <TableCell>{getStatusChip(asset.status)}</TableCell>
+                    {/* Quantity Chip Cell */}
                     <TableCell>
                       {getStockChip(asset.quantity, asset.minThreshold)}
                     </TableCell>
+                    {/* Min Threshold Cell */}
                     <TableCell>
                       <Typography variant="body2">
                         {asset.minThreshold}
                       </Typography>
                     </TableCell>
+                    {/* Actions Cell */}
                     <TableCell>
                       <Box sx={{ display: 'flex', gap: 0.5 }}>
+                        {/* View Button */}
                         <Tooltip title="View Details">
                           <IconButton
                             size="small"
@@ -435,16 +526,18 @@ const AssetList = ({
                             <Visibility fontSize="small" />
                           </IconButton>
                         </Tooltip>
+                        {/* Edit Button */}
                         <Tooltip title="Edit Asset">
                           <IconButton
                             size="small"
                             color="secondary"
-                            onClick={() => handleEditClick(asset)} // Updated to open dialog
+                            onClick={() => handleEditClick(asset)} // open dialog
                             disabled={loading}
                           >
                             <Edit fontSize="small" />
                           </IconButton>
                         </Tooltip>
+                        {/* Delete Button */}
                         <Tooltip title="Delete Asset">
                           <IconButton
                             size="small"
@@ -465,7 +558,7 @@ const AssetList = ({
         </TableContainer>
       </Card>
 
-      {/* New: Edit Dialog */}
+      {/* Edit Asset Dialog */}
       <Dialog
         open={editDialogOpen}
         onClose={handleEditCancel}
@@ -483,6 +576,7 @@ const AssetList = ({
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+            {/* Name Field */}
             <TextField
               label="Name *"
               value={editForm.name}
@@ -491,6 +585,7 @@ const AssetList = ({
               size="small"
               required
             />
+            {/* Category Field */}
             <TextField
               label="Category"
               value={editForm.category}
@@ -498,6 +593,7 @@ const AssetList = ({
               fullWidth
               size="small"
             />
+            {/* Location and Status Row */}
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="Location *"
@@ -527,6 +623,7 @@ const AssetList = ({
                 <MenuItem value="retired">Retired</MenuItem>
               </TextField>
             </Box>
+            {/* Quantity and Min Threshold Row */}
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="Quantity *"
@@ -551,6 +648,7 @@ const AssetList = ({
                 required
               />
             </Box>
+            {/* Building and Room Row */}
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="Building"
@@ -567,6 +665,7 @@ const AssetList = ({
                 size="small"
               />
             </Box>
+            {/* Condition Field */}
             <TextField
               label="Condition (1-5)"
               type="number"
@@ -580,9 +679,11 @@ const AssetList = ({
           </Box>
         </DialogContent>
         <DialogActions>
+          {/* Cancel Button */}
           <Button onClick={handleEditCancel} disabled={loading}>
             Cancel
           </Button>
+          {/* Submit Button */}
           <Button
             onClick={handleEditSubmit}
             variant="contained"
@@ -599,7 +700,7 @@ const AssetList = ({
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog - unchanged */}
+      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={handleDeleteCancel}
@@ -621,9 +722,11 @@ const AssetList = ({
           </Typography>
         </DialogContent>
         <DialogActions>
+          {/* Cancel Button */}
           <Button onClick={handleDeleteCancel} disabled={loading}>
             Cancel
           </Button>
+          {/* Delete Button */}
           <Button
             onClick={handleDeleteConfirm}
             color="error"
@@ -635,7 +738,8 @@ const AssetList = ({
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Snackbar for notifications - unchanged */}
+
+      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

@@ -24,7 +24,7 @@ import {
   Numbers,
   Pending as PendingIcon
 } from '@mui/icons-material';
-// Assuming purchaseRequestsAPI in services/api.js
+
 import { purchaseRequestsAPI } from '../services/api';
 
 const AddPurchaseRequest = ({ onPurchaseRequestAdded }) => {

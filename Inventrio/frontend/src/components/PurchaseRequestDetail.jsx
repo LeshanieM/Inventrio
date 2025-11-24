@@ -56,7 +56,7 @@ const PurchaseRequestDetail = ({ purchaseRequest, onBack }) => {
         note: 'Request submitted',
         user: 'John Doe',
       },
-      // Add more if approved/rejected, etc.
+      
     ]);
   };
 

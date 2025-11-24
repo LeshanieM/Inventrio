@@ -4,8 +4,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import assetRoutes from './routes/assets.js';
 import maintenanceRoutes from './routes/maintenance.js';
-import sparePartsRoutes from './routes/spareParts.js'; 
-import purchaseRequestRoutes from './routes/purchaseRequests.js'; 
+import sparePartsRoutes from './routes/spareParts.js';
+import purchaseRequestRoutes from './routes/purchaseRequests.js';
+
 dotenv.config();
 
 const app = express();
@@ -17,8 +18,9 @@ app.use(express.json());
 // Routes
 app.use('/api/assets', assetRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
-app.use('/api/spare-parts', sparePartsRoutes); 
-app.use('/api/purchase-requests', purchaseRequestRoutes); 
+app.use('/api/spare-parts', sparePartsRoutes);
+app.use('/api/purchase-requests', purchaseRequestRoutes);
+
 // MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI;
 mongoose.connect(MONGODB_URI, {
@@ -34,7 +36,5 @@ mongoose.connect(MONGODB_URI, {
   console.log('Please make sure MongoDB is running on your system');
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Export the app for Vercel serverless
+export default app;

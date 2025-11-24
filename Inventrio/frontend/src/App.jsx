@@ -388,18 +388,11 @@ function App() {
     setCurrentView('spare-part-detail');
   };
 
-/*************  ✨ Windsurf Command 🌟  *************/
-  /**
-   * Handles purchase request edit navigation
-   * @param {object} purchaseRequest - Purchase request to edit
-   * @description Sets the selected purchase request and navigates to the detail view
-   */
   //  Handle purchase request edit navigation
   const handlePurchaseRequestEdit = (purchaseRequest) => {
     setSelectedPurchaseRequest(purchaseRequest);
     setCurrentView('purchase-request-detail');
   };
-/*******  c308c0a8-5163-4d37-a595-c114d0852e90  *******/
 
   /**
    * Handles maintenance edit navigation

@@ -4,9 +4,9 @@
   "type": "module",
   "description": "Frontend for Asset Management System",
   "scripts": {
-    "dev": "vite",
-    "start": "vite",
-    "build": "vite build",
+    "dev": "node init && vite",
+    "start": "node init && vite",
+    "build": "node init && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

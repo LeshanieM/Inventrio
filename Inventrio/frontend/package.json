@@ -1,0 +1,29 @@
+{
+  "name": "asset-management-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Frontend for Asset Management System",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.5",
+    "@mui/material": "^7.3.5",
+    "axios": "^1.5.0",
+    "chart.js": "^4.4.0",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react": "^4.0.3",
+    "vite": "^4.4.5"
+  }
+}

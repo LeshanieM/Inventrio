@@ -1,6 +1,6 @@
 # Inventrio (MERN Stack)
 
-Only the Frontend has been deployed, check it out from below link
+Only the Frontend has been deployed, check it out from below link:
 inventrio.vercel.app
 
 ## 📌 Description

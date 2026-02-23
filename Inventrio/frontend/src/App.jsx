@@ -105,7 +105,7 @@ function App() {
   }, []);
 
   /**
-   * Loads assets from API or uses mock data on error
+   * Loads assets from API or uses mock data on error yy
    */
   const loadAssets = async () => {
     try {
